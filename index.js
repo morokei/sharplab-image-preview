@@ -11,21 +11,20 @@ app.get('/:url/:wxh', async (req, res) => {
     const partial = req.params.url;
     const [w, h] = req.params.wxh.split('x');
     if (!partial) {
-        return res.status(500).send('expected partial url, but got nothing. make sure you provide /:url/:wxh');
+        return res.status(404).send('expected partial url, but got nothing. make sure you provide /:url/:wxh');
     }
     if (!w || !h) {
-        return res.status(500).send('expected width and height in pixels, make sure you provide /:url/:wxh');
+        return res.status(404).send('expected width and height in pixels, make sure you provide /:url/:wxh');
     }
     const width = parseInt(w, 10);
     const height = parseInt(h, 10);
 
-    if (width > maxWidth ) {
-        return res.status(500).send(`width is larger than ${maxWidth} pixels`);
+    if (width > maxWidth) {
+        return res.status(404).send(`width is larger than ${maxWidth} pixels`);
     }
     if (height > maxHeight) {
-        return res.status(500).send(`height is larger than ${maxHeight} pixels`);
+        return res.status(404).send(`height is larger than ${maxHeight} pixels`);
     }
-
 
     //v2:CYLg1APg9FAEAqBTAzgFwLACgACAmAjFtgMyx6wDCsA3lrPWadgCywCyAFAJQ10MC+WfkA==
     const url = 'https://sharplab.io/#' + partial;

@@ -8,28 +8,32 @@ const port = 3000;
 const maxWidth = 1024;
 const maxHeight = 768;
 
-app.use((err, __, res, _) => {
+app.use((err: unknown, __: express.Request, res: express.Response, _: express.NextFunction) => {
     console.error(err);
-    res.status(500).send(err.message ?? err);
+    res.status(500).send((err as { message?: string }).message ?? err);
 });
 
 app.get('/:url/:wxh', asyncHandler(async (req, res) => {
     const partial = req.params.url;
     const [w, h] = req.params.wxh.split('x');
     if (!partial) {
-        return res.status(404).send('expected partial url, but got nothing. make sure you provide /:url/:wxh');
+        res.status(404).send('expected partial url, but got nothing. make sure you provide /:url/:wxh');
+        return;
     }
     if (!w || !h) {
-        return res.status(404).send('expected width and height in pixels, make sure you provide /:url/:wxh');
+        res.status(404).send('expected width and height in pixels, make sure you provide /:url/:wxh');
+        return;
     }
     const width = parseInt(w, 10);
     const height = parseInt(h, 10);
 
     if (width > maxWidth) {
-        return res.status(404).send(`width is larger than ${maxWidth} pixels`);
+        res.status(404).send(`width is larger than ${maxWidth} pixels`);
+        return;
     }
     if (height > maxHeight) {
-        return res.status(404).send(`height is larger than ${maxHeight} pixels`);
+        res.status(404).send(`height is larger than ${maxHeight} pixels`);
+        return;
     }
 
     //v2:CYLg1APg9FAEAqBTAzgFwLACgACAmAjFtgMyx6wDCsA3lrPWadgCywCyAFAJQ10MC+WfkA==

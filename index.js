@@ -50,7 +50,8 @@ app.get('/:url/:wxh', asyncHandler(async (req, res) => {
     await browser.close();
     res.writeHead(200, {
         'Content-Type': 'image/png',
-        'Content-Length': buffer.length
+        'Content-Length': buffer.length,
+        'Cache-Control': 'public,max-age=31536000'
     });
     res.end(buffer);
 }));

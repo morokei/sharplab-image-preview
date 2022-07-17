@@ -11,19 +11,19 @@ app.get('/:url/:wxh', async (req, res) => {
     const partial = req.params.url;
     const [w, h] = req.params.wxh.split('x');
     if (!partial) {
-        return res.status(500).send({ error: 'expected partial url, but got nothing. make sure you provide /:url/:wxh' });
+        return res.status(500).send('expected partial url, but got nothing. make sure you provide /:url/:wxh');
     }
     if (!w || !h) {
-        return res.status(500).send({ error:  'expected width and height in pixels, make sure you provide /:url/:wxh' });
+        return res.status(500).send('expected width and height in pixels, make sure you provide /:url/:wxh');
     }
     const width = parseInt(w, 10);
     const height = parseInt(h, 10);
 
     if (width > maxWidth ) {
-        return res.status(500).send({ error:  `width is larger than ${maxWidth} pixels` });
+        return res.status(500).send(`width is larger than ${maxWidth} pixels`);
     }
     if (height > maxHeight) {
-        return res.status(500).send({ error:  `height is larger than ${maxHeight} pixels` });
+        return res.status(500).send(`height is larger than ${maxHeight} pixels`);
     }
 
 
@@ -39,8 +39,7 @@ app.get('/:url/:wxh', async (req, res) => {
         });
     }
     catch(err) {
-        res.status(500);
-        return res.render('error', { error: err });
+        return res.status(500).send(err.message ?? err);
     }
     await page.setViewport({
         width,
@@ -51,8 +50,7 @@ app.get('/:url/:wxh', async (req, res) => {
     await browser.close();
     res.writeHead(200, {
         'Content-Type': 'image/png',
-        'Content-Length': buffer.length,
-        '': ''
+        'Content-Length': buffer.length
     });
     res.end(buffer);
 });

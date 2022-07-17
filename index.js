@@ -1,5 +1,6 @@
 import puppeteer from 'puppeteer';
 import express from 'express';
+import asyncHandler from 'express-async-handler';
 
 const app = express();
 const port = 3000;
@@ -7,7 +8,12 @@ const port = 3000;
 const maxWidth = 1024;
 const maxHeight = 768;
 
-app.get('/:url/:wxh', async (req, res) => {
+app.use((err, __, res, _) => {
+    console.error(err);
+    res.status(500).send(err.message ?? err);
+});
+
+app.get('/:url/:wxh', asyncHandler(async (req, res) => {
     const partial = req.params.url;
     const [w, h] = req.params.wxh.split('x');
     if (!partial) {
@@ -32,14 +38,9 @@ app.get('/:url/:wxh', async (req, res) => {
 
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
-    try {
-        await page.goto(url, {
-            waitUntil: 'networkidle0',
-        });
-    }
-    catch(err) {
-        return res.status(500).send(err.message ?? err);
-    }
+    await page.goto(url, {
+        waitUntil: 'networkidle0',
+    });
     await page.setViewport({
         width,
         height,
@@ -52,7 +53,7 @@ app.get('/:url/:wxh', async (req, res) => {
         'Content-Length': buffer.length
     });
     res.end(buffer);
-});
+}));
 
 app.listen(port, () => {
     console.log(`App listening on port ${port}`)

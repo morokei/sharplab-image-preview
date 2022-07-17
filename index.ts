@@ -1,12 +1,22 @@
 import puppeteer from 'puppeteer';
 import express from 'express';
 import asyncHandler from 'express-async-handler';
+import genericPool from 'generic-pool';
 
 const app = express();
 const port = 3000;
 
 const maxWidth = 1024;
 const maxHeight = 768;
+
+const browserPool = genericPool.createPool({
+    create() {
+        return puppeteer.launch();
+    },
+    destroy(browser) {
+        return browser.close();
+    }
+}, { min: 3, max: 10 })
 
 app.use((err: unknown, __: express.Request, res: express.Response, _: express.NextFunction) => {
     console.error(err);
@@ -40,18 +50,23 @@ app.get('/:url/:wxh', asyncHandler(async (req, res) => {
     const url = 'https://sharplab.io/#' + partial;
     console.log(url);
 
-    const browser = await puppeteer.launch();
-    const page = await browser.newPage();
-    await page.goto(url, {
-        waitUntil: 'networkidle0',
-    });
-    await page.setViewport({
-        width,
-        height,
-        deviceScaleFactor: 1,
-    });
-    const buffer = await page.screenshot();
-    await browser.close();
+    let buffer: Buffer;
+    const browser = await browserPool.acquire();
+    try {
+        const page = await browser.newPage();
+        await page.goto(url, {
+            waitUntil: 'networkidle0',
+        });
+        await page.setViewport({
+            width,
+            height,
+            deviceScaleFactor: 1,
+        });
+        buffer = await page.screenshot() as Buffer;
+    }
+    finally {
+        await browserPool.release(browser);
+    }
     res.writeHead(200, {
         'Content-Type': 'image/png',
         'Content-Length': buffer.length,
@@ -60,6 +75,13 @@ app.get('/:url/:wxh', asyncHandler(async (req, res) => {
     res.end(buffer);
 }));
 
-app.listen(port, () => {
+const server = app.listen(port, () => {
     console.log(`App listening on port ${port}`)
+});
+
+process.on('SIGTERM', async () => {
+    console.log('SIGTERM signal received: closing');
+    await new Promise(done => server.close(done));
+    await browserPool.drain();
+    await browserPool.clear();
 });

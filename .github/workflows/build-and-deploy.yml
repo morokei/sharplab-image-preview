@@ -10,7 +10,8 @@ jobs:
     name: Build
     # https://github.community/t/duplicate-checks-on-push-and-pull-request-simultaneous-event/18012/5
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
-    runs-on: ubuntu-latest
+    # must run on Windows to download correct Chromium
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
 
@@ -22,12 +23,13 @@ jobs:
 
       - run: npm run build
 
-      - run: zip -r app.zip ./dist
+      - run: zip -r app.zip .
+        working-directory: ./dist
 
       - uses: actions/upload-artifact@v2
         with:
           name: app
-          path: ./app.zip
+          path: ./dist/app.zip
           if-no-files-found: error
 
   deploy-to-edge:

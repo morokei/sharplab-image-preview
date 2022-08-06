@@ -23,6 +23,10 @@ app.use((err: unknown, __: express.Request, res: express.Response, _: express.Ne
     res.status(500).send((err as { message?: string }).message ?? err);
 });
 
+app.get('/', (_, res) => {
+    res.status(200).send('Status: OK');
+});
+
 app.get('/:url/:wxh', asyncHandler(async (req, res) => {
     const partial = req.params.url;
     const [w, h] = req.params.wxh.split('x');

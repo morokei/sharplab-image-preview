@@ -20,7 +20,7 @@ jobs:
 
       - run: npm ci
 
-      - run: zip -r app.zip .  -x "./.git/*"
+      - run: zip -r app.zip ./dist"
 
       - uses: actions/upload-artifact@v2
         with:

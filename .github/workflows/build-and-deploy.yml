@@ -22,7 +22,7 @@ jobs:
 
       - run: npm run build
 
-      - run: zip -r app.zip ./dist"
+      - run: zip -r app.zip ./dist
 
       - uses: actions/upload-artifact@v2
         with:

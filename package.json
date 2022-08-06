@@ -4,7 +4,7 @@
   "description": "",
   "scripts": {
     "start": "ts-node-esm index.ts",
-    "build": "tsc && shx cp package*.json dist && cd dist && npm ci --production"
+    "build": "tsc && shx cp web.config dist && shx cp package*.json dist && cd dist && npm ci --production"
   },
   "type": "module",
   "author": "",

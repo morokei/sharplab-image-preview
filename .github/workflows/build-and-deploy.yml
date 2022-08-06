@@ -23,9 +23,6 @@ jobs:
 
       - run: npm run build
 
-      - run: zip -r app.zip .
-        working-directory: ./dist
-
       - uses: actions/upload-artifact@v2
         with:
           name: app

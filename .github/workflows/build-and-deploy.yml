@@ -1,0 +1,51 @@
+name: Build and Deploy
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build
+    # https://github.community/t/duplicate-checks-on-push-and-pull-request-simultaneous-event/18012/5
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '16.14.2'
+
+      - run: npm ci
+
+      - run: zip -r app.zip .
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: app
+          path: ./app.zip
+          if-no-files-found: error
+
+  deploy-to-edge:
+    name: Deploy (Edge)
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    environment: edge
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: app
+
+      - uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - uses: azure/webapps-deploy@v2
+        with:
+          app-name: sl-edge-image-preview
+          package: app.zip

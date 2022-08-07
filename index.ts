@@ -9,13 +9,17 @@ const port = process.env.PORT || 3000;
 
 const maxWidth = 1024;
 const maxHeight = 768;
+
 let browserCreateError: string | unknown | null = "Not prepared yet";
 
+console.log('CHROMIUM_FLAGS: ', process.env.CHROMIUM_FLAGS);
 const browserPool = genericPool.createPool({
     async create() {
         let browser;
         try {
-            browser = await puppeteer.launch();
+            browser = await puppeteer.launch({
+                args: process.env.CHROMIUM_FLAGS?.split(' ') ?? []
+            });
             // or
             /* browser = await new Promise<Browser>((_, reject) => {
                 setTimeout(() => reject("Test error"), 5 * 1000);

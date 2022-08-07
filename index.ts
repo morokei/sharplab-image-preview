@@ -1,4 +1,4 @@
-import puppeteer from 'puppeteer';
+import puppeteer, { Browser } from 'puppeteer';
 import express from 'express';
 import asyncHandler from 'express-async-handler';
 import genericPool from 'generic-pool';
@@ -8,10 +8,26 @@ const port = process.env.PORT || 3000;
 
 const maxWidth = 1024;
 const maxHeight = 768;
+let browserCreateError: string | unknown | null = "Not prepared yet";
 
 const browserPool = genericPool.createPool({
-    create() {
-        return puppeteer.launch();
+    async create() {
+        let browser;
+        try {
+            browser = await puppeteer.launch();
+            // or
+            /* browser = await new Promise<Browser>((_, reject) => {
+                setTimeout(() => reject("Test error"), 5 * 1000);
+            }); */
+        }
+        catch (e) {
+            browserCreateError = e;
+            console.error(e);
+            throw e;
+        }
+        browserCreateError = null;
+        console.log("prepared");
+        return browser;
     },
     destroy(browser) {
         return browser.close();
@@ -49,6 +65,11 @@ app.get('/:url/:wxh', asyncHandler(async (req, res) => {
     //v2:CYLg1APg9FAEAqBTAzgFwLACgACAmAjFtgMyx6wDCsA3lrPWadgCywCyAFAJQ10MC+WfkA==
     const url = 'https://sharplab.io/#' + partial;
     console.log(url);
+
+    if (browserCreateError) {
+        res.status(503).send(browserCreateError);
+        return;
+    }
 
     let buffer: Buffer;
     const browser = await browserPool.acquire();

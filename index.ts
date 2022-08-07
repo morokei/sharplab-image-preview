@@ -2,6 +2,7 @@ import puppeteer, { Browser } from 'puppeteer';
 import express from 'express';
 import asyncHandler from 'express-async-handler';
 import genericPool from 'generic-pool';
+import { serializeError } from 'serialize-error';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -71,7 +72,7 @@ app.get('/:url/:wxh', asyncHandler(async (req, res) => {
     console.log(url);
 
     if (browserCreateError) {
-        res.status(503).send(JSON.stringify(browserCreateError));
+        res.status(503).send(JSON.stringify(serializeError(browserCreateError)));
         return;
     }
 

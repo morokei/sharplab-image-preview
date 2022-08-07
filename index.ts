@@ -71,7 +71,7 @@ app.get('/:url/:wxh', asyncHandler(async (req, res) => {
     console.log(url);
 
     if (browserCreateError) {
-        res.status(503).send(browserCreateError);
+        res.status(503).send(JSON.stringify(browserCreateError));
         return;
     }
 

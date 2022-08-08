@@ -54,3 +54,27 @@ jobs:
         with:
           app-name: sl-edge-image-preview
           package: app.zip
+
+  deploy-to-main:
+    name: Deploy (Main)
+    needs: deploy-to-edge
+    if: github.ref == 'refs/heads/main'
+    environment: main
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: app
+
+      - uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - uses: azure/webapps-deploy@v2
+        with:
+          app-name: sl-image-preview
+          package: app.zip
